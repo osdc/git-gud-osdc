@@ -1,24 +1,19 @@
 import "./App.css";
-
 import {
   motion,
   type Variants,
 } from "motion/react";
-
 import {
   useEffect,
   useRef,
   useState,
 } from "react";
-
 import Navbar from "./components/Navbar";
 import Ticker from "./components/Ticker";
 import ContentPage from "./components/ContentPage";
-
 import { pages } from "./pages";
 import { API_BASE_URL } from "./config";
-
-import gitgudheader from "./assets/images/gitgudheader.png";
+import gitgudheader from "./assets/images/gitgudheader.svg";
 import octocat from "./assets/images/octocat.png";
 
 const containerVariants: Variants = {
@@ -57,6 +52,7 @@ const themes = [
 ];
 
 const STORAGE_KEYS = {
+  githubId: "gitgud-github-id",
   teamName: "gitgud-team-name",
   teamSize: "gitgud-team-size",
   teamMember: "gitgud-team-member",
@@ -153,9 +149,7 @@ function saveStorageValue(
 ) {
   try {
     window.localStorage.setItem(key, value);
-  } catch {
-    // Ignore storage errors.
-  }
+  } catch {}
 }
 
 async function fetchProgress(): Promise<number> {
@@ -169,17 +163,26 @@ async function fetchProgress(): Promise<number> {
 
     if (response.ok) {
       const data = await response.json();
-      if (data && typeof data.progress === "number") {
+
+      if (
+        data &&
+        typeof data.progress === "number"
+      ) {
         return data.progress;
       }
+
       if (typeof data === "number") {
-        return data; // Just in case it ever returns primitive
+        return data;
       }
     }
+
     return 0;
   } catch (error) {
-    console.error("fetchProgress failed (likely CORS or Network Error):", error);
-    // Fail closed, return 0
+    console.error(
+      "fetchProgress failed (likely CORS or Network Error):",
+      error,
+    );
+
     return 0;
   }
 }
@@ -190,6 +193,13 @@ function App() {
 
   const [themeIndex, setThemeIndex] =
     useState(() => readThemeIndex());
+
+  const [githubId, setGithubId] =
+    useState(() =>
+      readStorageString(
+        STORAGE_KEYS.githubId,
+      ),
+    );
 
   const [teamName, setTeamName] =
     useState(() =>
@@ -217,20 +227,12 @@ function App() {
   const lockMessageTimer =
     useRef<number | null>(null);
 
-  /*
-   * If the site becomes locked down while somebody
-   * is already beyond the max allowed page, bring them back.
-   */
   useEffect(() => {
     if (currentPage > maxAllowedPage + 1) {
       setCurrentPage(maxAllowedPage);
     }
   }, [maxAllowedPage, currentPage]);
 
-  /*
-   * Persist the selected theme so that refreshing
-   * or reopening the site keeps the same theme.
-   */
   useEffect(() => {
     saveStorageValue(
       STORAGE_KEYS.themeIndex,
@@ -238,9 +240,6 @@ function App() {
     );
   }, [themeIndex]);
 
-  /*
-   * Check the current progress on initial load.
-   */
   useEffect(() => {
     let cancelled = false;
 
@@ -251,7 +250,6 @@ function App() {
         return;
       }
 
-      // Directly use progress as 1-based index max allowed page
       setMaxAllowedPage(progress);
     };
 
@@ -298,7 +296,8 @@ function App() {
       }, 4500);
   };
 
-  const [isNavigating, setIsNavigating] = useState(false);
+  const [isNavigating, setIsNavigating] =
+    useState(false);
 
   const goToPage = async (page: number) => {
     if (isNavigating) return;
@@ -312,12 +311,11 @@ function App() {
       setIsNavigating(true);
 
       try {
-        // Check progress only when navigating forward
         const progress = await fetchProgress();
+
         setMaxAllowedPage(progress);
 
         if (nextPage > progress + 1) {
-          // If jumping too far (like clicking Memes in nav), show toast and don't navigate
           showLockedMessage();
           return;
         }
@@ -333,6 +331,43 @@ function App() {
       top: 0,
       behavior: "smooth",
     });
+  };
+
+  const retryProgress = async () => {
+    if (isNavigating) return;
+
+    setIsNavigating(true);
+
+    try {
+      const progress = await fetchProgress();
+
+      setMaxAllowedPage(progress);
+
+      if (currentPage <= progress) {
+        setShowLockMessage(false);
+        return;
+      }
+
+      if (currentPage === progress + 1) {
+        setShowLockMessage(false);
+        return;
+      }
+
+      showLockedMessage();
+    } finally {
+      setIsNavigating(false);
+    }
+  };
+
+  const handleGithubIdChange = (
+    value: string,
+  ) => {
+    setGithubId(value);
+
+    saveStorageValue(
+      STORAGE_KEYS.githubId,
+      value,
+    );
   };
 
   const handleTeamNameChange = (
@@ -356,14 +391,6 @@ function App() {
       String(value),
     );
 
-    /*
-     * A one-person team is automatically
-     * member 1.
-     *
-     * If somebody changes from 3 members
-     * to 2 while they were member 3,
-     * reset their member selection to 1.
-     */
     if (value === 1) {
       setTeamMemberNumber(1);
 
@@ -452,12 +479,23 @@ function App() {
           onThemeChange={changeTheme}
           onMemesClick={() => goToPage(9)}
           maxAllowedPage={maxAllowedPage}
+          onRetryProgress={retryProgress}
+          githubId={githubId}
           teamName={teamName}
           teamSize={teamSize}
           teamMemberNumber={teamMemberNumber}
-          onTeamNameChange={handleTeamNameChange}
-          onTeamSizeChange={handleTeamSizeChange}
-          onTeamMemberChange={handleTeamMemberChange}
+          onGithubIdChange={
+            handleGithubIdChange
+          }
+          onTeamNameChange={
+            handleTeamNameChange
+          }
+          onTeamSizeChange={
+            handleTeamSizeChange
+          }
+          onTeamMemberChange={
+            handleTeamMemberChange
+          }
           showLockMessage={showLockMessage}
         />
       )}

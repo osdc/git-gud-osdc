@@ -8,12 +8,14 @@ import LONE_WOLF_IMAGE from "../assets/images/lonewolf.jpg";
 import { getMemesForTeamSize } from "../data/memes";
 import { API_BASE_URL } from "../config";
 
-
 const STORAGE_KEYS = {
+  githubId: "gitgud-github-id",
   teamName: "gitgud-team-name",
   teamSize: "gitgud-team-size",
   memberNumber: "gitgud-member-number",
   selectedTemplate: "gitgud-selected-template",
+  keyboardNavigationHintDismissed:
+    "gitgud-keyboard-navigation-hint-dismissed",
 };
 
 const containerVariants: Variants = {
@@ -45,15 +47,18 @@ type ContentPageProps = {
   onPrevious: () => void;
   onNext: () => void;
   onThemeChange: () => void;
+  githubId: string;
   teamName: string;
   teamSize: number | null;
   teamMemberNumber: number | null;
+  onGithubIdChange: (value: string) => void;
   onTeamNameChange: (value: string) => void;
   onTeamSizeChange: (value: number) => void;
   onTeamMemberChange: (value: number) => void;
   showLockMessage: boolean;
   onMemesClick: () => void;
   maxAllowedPage: number;
+  onRetryProgress: () => void;
 };
 
 type SubmittedMeme = {
@@ -72,9 +77,7 @@ function readStorage(key: string): string {
 function writeStorage(key: string, value: string): void {
   try {
     localStorage.setItem(key, value);
-  } catch {
-    // Ignore storage errors.
-  }
+  } catch {}
 }
 
 function getSelectedTemplate(): string {
@@ -101,13 +104,49 @@ function ArrowButton({
         scale: 0.92,
       }}
       aria-label={
-        direction === "left"
-          ? "Previous page"
-          : "Next page"
+        direction === "left" ? "Previous page" : "Next page"
       }
     >
       {direction === "left" ? "←" : "→"}
     </motion.button>
+  );
+}
+
+function KeyboardNavigationHint({
+  onDismiss,
+}: {
+  onDismiss: () => void;
+}) {
+  return (
+    <div
+      className="keyboard-navigation-hint"
+      role="status"
+      aria-label="Keyboard navigation instructions"
+    >
+      <button
+        type="button"
+        className="keyboard-navigation-hint-close"
+        onClick={onDismiss}
+        aria-label="Dismiss keyboard navigation instructions"
+      >
+        ×
+      </button>
+
+      <div className="keyboard-navigation-hint-content">
+        <div className="keyboard-navigation-hint-title">
+          NAVIGATION TIP
+        </div>
+
+        <div>
+          Go back and forth between screens using the navigation
+          buttons below, or use
+          <span className="keyboard-key">🡸</span>
+          and
+          <span className="keyboard-key">🡺</span>
+          arrow keys.
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -116,39 +155,55 @@ function Terminal({
 }: {
   steps: TerminalStep[];
 }) {
-  const [copied, setCopied] = useState(false);
+  const [copied, setCopied] = useState<number | null>(null);
+
+  const copyText = async (text: string, index: number) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(index);
+
+      window.setTimeout(() => {
+        setCopied((current) =>
+          current === index ? null : current,
+        );
+      }, 1600);
+    } catch {
+      setCopied(null);
+    }
+  };
 
   const copyAll = async () => {
     const text = steps.map((step) => step.code).join("\n");
 
     try {
       await navigator.clipboard.writeText(text);
-      setCopied(true);
+      setCopied(-1);
 
       window.setTimeout(() => {
-        setCopied(false);
+        setCopied((current) =>
+          current === -1 ? null : current,
+        );
       }, 1600);
     } catch {
-      setCopied(false);
+      setCopied(null);
     }
   };
 
   return (
     <div className="terminal">
       <div className="terminal-header">
-        <span className="terminal-title">
-          Terminal
-        </span>
+        <span className="terminal-title">Terminal</span>
 
         <div className="terminal-actions">
           <button
             type="button"
-            className={`terminal-copy${copied ? " is-copied" : ""
-              }`}
+            className={`terminal-copy${
+              copied === -1 ? " is-copied" : ""
+            }`}
             onClick={copyAll}
-            aria-label="Copy terminal commands"
+            aria-label="Copy all terminal commands"
           >
-            {copied ? "Copied" : "Copy"}
+            {copied === -1 ? "Copied" : "Copy all"}
           </button>
 
           <div className="terminal-controls">
@@ -174,9 +229,7 @@ function Terminal({
             className="terminal-command"
             key={`${step.label}-${index}`}
           >
-            <div className="terminal-label">
-              {step.label}
-            </div>
+            <div className="terminal-label">{step.label}</div>
 
             <div className="terminal-code">
               <span
@@ -187,6 +240,17 @@ function Terminal({
               </span>
 
               <code>{step.code}</code>
+
+              <button
+                type="button"
+                className={`terminal-command-copy${
+                  copied === index ? " is-copied" : ""
+                }`}
+                onClick={() => copyText(step.code, index)}
+                aria-label={`Copy ${step.label} command`}
+              >
+                {copied === index ? "Copied" : "Copy"}
+              </button>
             </div>
           </div>
         ))}
@@ -218,12 +282,15 @@ function MemeGallery({
     if (teamSize === 1) {
       return "LONE WOLF • ALL TEMPLATES AVAILABLE";
     }
+
     if (teamSize === 2) {
       return "2-MEMBER TEAM • 2-CAPTION MEMES";
     }
+
     if (teamSize === 3) {
       return "3-MEMBER TEAM • 3-CAPTION MEMES";
     }
+
     return "CHOOSE A TEMPLATE";
   };
 
@@ -253,8 +320,9 @@ function MemeGallery({
             <button
               type="button"
               key={template.id}
-              className={`meme-card${isSelected ? " is-selected" : ""
-                }`}
+              className={`meme-card${
+                isSelected ? " is-selected" : ""
+              }`}
               onClick={() =>
                 selectTemplate(template.id)
               }
@@ -274,7 +342,8 @@ function MemeGallery({
                   draggable={false}
                   loading="lazy"
                   onError={(e) => {
-                    e.currentTarget.src = template.remoteUrl;
+                    e.currentTarget.src =
+                      template.remoteUrl;
                   }}
                 />
 
@@ -296,7 +365,9 @@ async function fetchSubmittedImages(): Promise<string[]> {
   });
 
   if (!response.ok) {
-    throw new Error(`Failed to fetch images: ${response.status}`);
+    throw new Error(
+      `Failed to fetch images: ${response.status}`,
+    );
   }
 
   const data = await response.json();
@@ -309,10 +380,7 @@ async function fetchSubmittedImages(): Promise<string[]> {
 }
 
 function SubmittedMemes() {
-  const [memes, setMemes] = useState<
-    SubmittedMeme[]
-  >([]);
-
+  const [memes, setMemes] = useState<SubmittedMeme[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
@@ -331,15 +399,17 @@ function SubmittedMemes() {
         }
 
         const results = paths.map((path) => {
-          // If the backend returns paths like "/image/raw/xyz.png", use it directly.
-          // Otherwise, construct it.
           const imageUrl = path.startsWith("/")
             ? `${API_BASE_URL}${path}`
             : `${API_BASE_URL}/image/raw/${path}`;
 
-          // Extract a name for the team from the path
-          const filename = path.split("/").pop() || path;
-          const team = filename.replace(/\.[^/.]+$/, ""); // Remove extension
+          const filename =
+            path.split("/").pop() || path;
+
+          const team = filename.replace(
+            /\.[^/.]+$/,
+            "",
+          );
 
           return {
             team,
@@ -350,7 +420,11 @@ function SubmittedMemes() {
         setMemes(results);
       } catch (e) {
         if (!cancelled) {
-          console.error("loadSubmissions failed (likely CORS or Network Error):", e);
+          console.error(
+            "loadSubmissions failed (likely CORS or Network Error):",
+            e,
+          );
+
           setError(true);
         }
       } finally {
@@ -440,9 +514,7 @@ function TeamMemberPage({
     return (
       <div className="step-body lone-wolf-body">
         <div className="lone-wolf-message">
-          <strong>
-            Lone wolf, all the best!
-          </strong>
+          <strong>Lone wolf, all the best!</strong>
 
           <span>
             You have been assigned as member 1
@@ -509,19 +581,144 @@ function TeamMemberPage({
   );
 }
 
+function IdentityPage({
+  githubId,
+  teamName,
+  onGithubIdChange,
+  onTeamNameChange,
+}: {
+  githubId: string;
+  teamName: string;
+  onGithubIdChange: (value: string) => void;
+  onTeamNameChange: (value: string) => void;
+}) {
+  const [savedField, setSavedField] = useState<
+    "githubId" | "teamName" | null
+  >(null);
+
+  const saveField = (
+    field: "githubId" | "teamName",
+    value: string,
+  ) => {
+    const trimmedValue = value.trim();
+
+    if (!trimmedValue) {
+      return;
+    }
+
+    if (field === "githubId") {
+      onGithubIdChange(trimmedValue);
+    } else {
+      onTeamNameChange(trimmedValue);
+    }
+
+    setSavedField(field);
+
+    window.setTimeout(() => {
+      setSavedField((current) =>
+        current === field ? null : current,
+      );
+    }, 1600);
+  };
+
+  return (
+    <div className="step-body identity-body">
+      <div className="identity-fields">
+        <div
+          className={`identity-field${
+            savedField === "githubId"
+              ? " is-saved"
+              : ""
+          }`}
+        >
+          <input
+            className="figma-input"
+            type="text"
+            name="githubId"
+            placeholder="ENTER YOUR GITHUB ID"
+            value={githubId}
+            onChange={(event) => {
+              setSavedField(null);
+              onGithubIdChange(event.target.value);
+            }}
+            onKeyDown={(event) => {
+              if (event.key === "Enter") {
+                event.preventDefault();
+
+                saveField(
+                  "githubId",
+                  event.currentTarget.value,
+                );
+              }
+            }}
+          />
+
+          {savedField === "githubId" && (
+            <span className="input-saved">
+              SAVED ✓
+            </span>
+          )}
+        </div>
+
+        <div
+          className={`identity-field${
+            savedField === "teamName"
+              ? " is-saved"
+              : ""
+          }`}
+        >
+          <input
+            className="figma-input"
+            type="text"
+            name="teamName"
+            placeholder="ENTER TEAM NAME"
+            value={teamName}
+            onChange={(event) => {
+              setSavedField(null);
+              onTeamNameChange(event.target.value);
+            }}
+            onKeyDown={(event) => {
+              if (event.key === "Enter") {
+                event.preventDefault();
+
+                saveField(
+                  "teamName",
+                  event.currentTarget.value,
+                );
+              }
+            }}
+          />
+
+          {savedField === "teamName" && (
+            <span className="input-saved">
+              SAVED ✓
+            </span>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function PageBody({
   content,
   pageIndex,
+  githubId,
+  teamName,
   teamSize,
   teamMemberNumber,
+  onGithubIdChange,
   onTeamNameChange,
   onTeamSizeChange,
   onTeamMemberChange,
 }: {
   content: (typeof pages)[number]["content"];
   pageIndex: number;
+  githubId: string;
+  teamName: string;
   teamSize: number | null;
   teamMemberNumber: number | null;
+  onGithubIdChange: (value: string) => void;
   onTeamNameChange: (value: string) => void;
   onTeamSizeChange: (value: number) => void;
   onTeamMemberChange: (value: number) => void;
@@ -529,15 +726,28 @@ function PageBody({
   switch (content.kind) {
     case "button":
       return (
-        <div className="step-body centered-body">
-          <a
-            className="figma-button"
-            href={content.href}
-            target="_blank"
-            rel="noreferrer"
-          >
-            {content.text}
-          </a>
+        <div className="step-body signup-body">
+          <div className="signup-layout">
+            <div className="signup-action">
+              <a
+                className="figma-button"
+                href={content.href}
+                target="_blank"
+                rel="noreferrer"
+              >
+                {content.text}
+              </a>
+
+              {content.image && (
+                <img
+                  className="signup-image"
+                  src={content.image}
+                  alt="GitHub signup"
+                  draggable={false}
+                />
+              )}
+            </div>
+          </div>
         </div>
       );
 
@@ -546,36 +756,50 @@ function PageBody({
         <div className="step-body setup-body">
           <div className="step-highlight">
             {content.highlight}
-          </div><br /><br />
+          </div>
 
-          <a
-            className="download-label"
-            href={content.download.href}
-            target="_blank"
-            rel="noreferrer"
-          >
-            {content.download.text}
-          </a>
+          <div className="setup-options">
+            <div className="setup-option">
+              <span className="setup-option-label">
+                A) Git for Windows:
+              </span>
 
-          <Terminal steps={content.steps} />
+              <a
+                className="figma-button setup-download-button"
+                href={content.download.href}
+                target="_blank"
+                rel="noreferrer"
+              >
+                {content.download.text}
+              </a>
+            </div>
+
+            <div className="setup-terminal-label">
+              B) Execute commands given below:
+            </div>
+          </div>
+
+          <Terminal
+            steps={content.steps.map((step) =>
+              step.label === "Set username"
+                ? {
+                    ...step,
+                    code: `git config --global user.name "${
+                      githubId || "your_username"
+                    }"`,
+                  }
+                : step,
+            )}
+          />
         </div>
       );
 
     case "fork":
       return (
         <div className="step-body fork-body">
-          <p>
-            {content.description.map(
-              (line, index) => (
-                <span
-                  key={`${line}-${index}`}
-                >
-                  {line}
-                  <br />
-                </span>
-              ),
-            )}
-          </p>
+          <div className="step-highlight">
+            {content.highlight}
+          </div>
 
           <a
             className="figma-button"
@@ -586,27 +810,27 @@ function PageBody({
             {content.button.text}
           </a>
 
-          <Terminal steps={content.steps} />
+          <Terminal
+            steps={content.steps.map((step) =>
+              step.label === "Add origin"
+                ? {
+                    ...step,
+                    code: `git remote add origin https://github.com/${githubId}/GitGud`,
+                  }
+                : step,
+            )}
+          />
         </div>
       );
 
-    case "input":
+    case "identity":
       return (
-        <div className="step-body centered-body">
-          <input
-            className="figma-input"
-            type="text"
-            placeholder={content.placeholder}
-            defaultValue={readStorage(
-              STORAGE_KEYS.teamName,
-            )}
-            onChange={(event) =>
-              onTeamNameChange(
-                event.target.value,
-              )
-            }
-          />
-        </div>
+        <IdentityPage
+          githubId={githubId}
+          teamName={teamName}
+          onGithubIdChange={onGithubIdChange}
+          onTeamNameChange={onTeamNameChange}
+        />
       );
 
     case "choices":
@@ -646,12 +870,8 @@ function PageBody({
         return (
           <TeamMemberPage
             teamSize={teamSize}
-            teamMemberNumber={
-              teamMemberNumber
-            }
-            onTeamMemberChange={
-              onTeamMemberChange
-            }
+            teamMemberNumber={teamMemberNumber}
+            onTeamMemberChange={onTeamMemberChange}
           />
         );
       }
@@ -679,9 +899,7 @@ function PageBody({
       return (
         <div className="step-body lone-wolf-body">
           <div className="lone-wolf-message">
-            <strong>
-              {content.message}
-            </strong>
+            <strong>{content.message}</strong>
 
             <span>
               {content.captionMessage}
@@ -718,15 +936,15 @@ function PageBody({
 
 function LockedPage({
   onPrevious,
+  onRetryProgress,
 }: {
   onPrevious: () => void;
+  onRetryProgress: () => void;
 }) {
   return (
     <section className="locked-area">
       <div className="locked-message">
-        <div className="locked-icon">
-          🔒
-        </div>
+        <div className="locked-icon">🔒</div>
 
         <h2>
           THIS AREA IS NOT YET
@@ -740,13 +958,23 @@ function LockedPage({
           organisers open it up.
         </p>
 
-        <button
-          type="button"
-          className="figma-button"
-          onClick={onPrevious}
-        >
-          GO BACK
-        </button>
+        <div className="locked-actions">
+          <button
+            type="button"
+            className="figma-button"
+            onClick={onPrevious}
+          >
+            GO BACK
+          </button>
+
+          <button
+            type="button"
+            className="figma-button"
+            onClick={onRetryProgress}
+          >
+            TRY AGAIN
+          </button>
+        </div>
       </div>
     </section>
   );
@@ -759,15 +987,73 @@ export default function ContentPage({
   onThemeChange,
   onMemesClick,
   maxAllowedPage,
+  onRetryProgress,
+  githubId,
+  teamName,
   teamSize,
   teamMemberNumber,
+  onGithubIdChange,
   onTeamNameChange,
   onTeamSizeChange,
   onTeamMemberChange,
   showLockMessage,
 }: ContentPageProps) {
-  const page = pages[pageIndex - 1];
+  const [showKeyboardHint, setShowKeyboardHint] =
+    useState(() => {
+      if (window.innerWidth <= 768) {
+        return false;
+      }
 
+      return (
+        readStorage(
+          STORAGE_KEYS.keyboardNavigationHintDismissed,
+        ) !== "true"
+      );
+    });
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement | null;
+
+      if (
+        target?.tagName === "INPUT" ||
+        target?.tagName === "TEXTAREA" ||
+        target?.isContentEditable
+      ) {
+        return;
+      }
+
+      if (event.key === "ArrowLeft") {
+        event.preventDefault();
+        onPrevious();
+      }
+
+      if (event.key === "ArrowRight") {
+        event.preventDefault();
+        onNext();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      window.removeEventListener(
+        "keydown",
+        handleKeyDown,
+      );
+    };
+  }, [onPrevious, onNext]);
+
+  const dismissKeyboardHint = () => {
+    setShowKeyboardHint(false);
+
+    writeStorage(
+      STORAGE_KEYS.keyboardNavigationHintDismissed,
+      "true",
+    );
+  };
+
+  const page = pages[pageIndex - 1];
   const locked = pageIndex > maxAllowedPage;
 
   if (!page) {
@@ -784,8 +1070,15 @@ export default function ContentPage({
             maxAllowedPage={maxAllowedPage}
           />
 
+          {showKeyboardHint && (
+            <KeyboardNavigationHint
+              onDismiss={dismissKeyboardHint}
+            />
+          )}
+
           <LockedPage
             onPrevious={onPrevious}
+            onRetryProgress={onRetryProgress}
           />
 
           <Ticker />
@@ -797,12 +1090,13 @@ export default function ContentPage({
             />
 
             <div className="page-counter">
-              {String(pageIndex).padStart(2, "")} /{" "}
-              {String(pages.length).padStart(2, "")}
+              {pageIndex} / {pages.length}
             </div>
 
-            {/* Next button is hidden when locked */}
-            <div className="page-arrow page-arrow-placeholder" style={{ visibility: "hidden" }}>
+            <div
+              className="page-arrow page-arrow-placeholder"
+              style={{ visibility: "hidden" }}
+            >
               →
             </div>
           </div>
@@ -819,6 +1113,12 @@ export default function ContentPage({
           onMemesClick={onMemesClick}
           maxAllowedPage={maxAllowedPage}
         />
+
+        {showKeyboardHint && (
+          <KeyboardNavigationHint
+            onDismiss={dismissKeyboardHint}
+          />
+        )}
 
         {showLockMessage && (
           <div className="lock-toast">
@@ -848,9 +1148,7 @@ export default function ContentPage({
               {page.title
                 .split("\n")
                 .map((line, index) => (
-                  <span
-                    key={`${line}-${index}`}
-                  >
+                  <span key={`${line}-${index}`}>
                     {line}
                     <br />
                   </span>
@@ -864,16 +1162,13 @@ export default function ContentPage({
               <PageBody
                 content={page.content}
                 pageIndex={pageIndex}
+                githubId={githubId}
+                teamName={teamName}
                 teamSize={teamSize}
-                teamMemberNumber={
-                  teamMemberNumber
-                }
-                onTeamNameChange={
-                  onTeamNameChange
-                }
-                onTeamSizeChange={
-                  onTeamSizeChange
-                }
+                teamMemberNumber={teamMemberNumber}
+                onGithubIdChange={onGithubIdChange}
+                onTeamNameChange={onTeamNameChange}
+                onTeamSizeChange={onTeamSizeChange}
                 onTeamMemberChange={
                   onTeamMemberChange
                 }
@@ -891,8 +1186,7 @@ export default function ContentPage({
           />
 
           <div className="page-counter">
-            {String(pageIndex).padStart(2, "")} /{" "}
-            {String(pages.length).padStart(2, "")}
+            {pageIndex} / {pages.length}
           </div>
 
           <ArrowButton

@@ -19,12 +19,63 @@
   box-shadow: 12px 15px 0 rgba(0, 0, 0, 0.15);
 }
 
+.keyboard-navigation-hint {
+  position: relative;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 14px 52px 14px 18px;
+  color: var(--black-color);
+  background: var(--accent-color);
+  border-bottom: 2px solid var(--black-color);
+  font-family: "Mabook", sans-serif;
+  font-size: 15px;
+  font-weight: 900;
+  line-height: 1.35;
+}
+
+.keyboard-navigation-hint-close {
+  position: absolute;
+  top: 7px;
+  right: 10px;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  color: var(--black-color);
+  background: transparent;
+  border: 0;
+  font-family: inherit;
+  font-size: 20px;
+  font-weight: 900;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.keyboard-navigation-hint-content {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.keyboard-navigation-hint-title {
+  margin-bottom: 4px;
+  font-size: 17px;
+}
+
+.keyboard-key {
+  display: inline-block;
+  margin: 0 4px;
+  padding: 1px 6px;
+  color: var(--text-color);
+  background: var(--card-color);
+  border: 1px solid var(--black-color);
+  box-shadow: 2px 2px 0 var(--black-color);
+}
+
 .content-content {
   flex: 1;
   display: flex;
   align-items: flex-start;
-  padding: 60px;
   min-width: 0;
+  padding: 60px;
 }
 
 .content-inner {
@@ -39,9 +90,9 @@
   color: var(--accent-color);
   font-family: "Mabook", sans-serif;
   font-size: 30px;
+  font-weight: bold;
   text-decoration: underline;
   text-decoration-color: var(--highlight-color);
-  font-weight: bold;
   text-transform: uppercase;
 }
 
@@ -79,7 +130,7 @@
   text-align: center;
 }
 
-.centered-body>p {
+.centered-body > p {
   margin: 0 0 20px;
 }
 
@@ -94,6 +145,7 @@
   align-items: center;
   justify-content: center;
   min-height: 48px;
+  box-sizing: border-box;
   padding: 12px 24px;
   color: var(--black-color);
   background: var(--accent-color);
@@ -119,17 +171,158 @@
   box-shadow: 2px 2px 0 var(--black-color);
 }
 
-.download-label {
-  display: inline-flex;
-  margin-bottom: 25px;
-  padding: 9px 15px;
-  color: var(--black-color);
-  background: var(--accent-color);
+/* Page 1 */
+
+.signup-body {
+  width: 100%;
+}
+
+.signup-layout {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 30px;
+  width: 100%;
+}
+
+.signup-action {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 30px;
+  width: 100%;
+}
+
+.signup-image {
+  display: block;
+  width: min(420px, 100%);
+  max-width: 420px;
+  max-height: 320px;
+  object-fit: contain;
   border: 2px solid var(--black-color);
-  box-shadow: 3px 3px 0 var(--black-color);
-  font-size: 13px;
+  box-shadow: 5px 5px 0 var(--black-color);
+}
+
+/* Setup Git */
+
+.setup-body {
+  width: 100%;
+}
+
+.step-highlight {
+  display: inline-block;
+  margin-bottom: 20px;
+  color: var(--page-heading-color);
+  font-size: clamp(25px, 4vw, 45px);
   font-weight: bold;
-  text-decoration: none;
+  line-height: 0.95;
+  text-shadow: 3px 3px 0 var(--page-shadow-color);
+}
+
+.setup-options {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 18px;
+  margin-bottom: 25px;
+}
+
+.setup-option {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.setup-option-label,
+.setup-terminal-label {
+  color: var(--text-color);
+  font-size: 15px;
+  font-weight: bold;
+}
+
+.setup-option-label {
+  padding: 10px 14px;
+}
+
+.setup-terminal-label {
+  padding: 9px 14px;
+}
+
+.setup-download-button {
+  min-height: 42px;
+  padding: 9px 18px;
+  font-size: 13px;
+}
+
+.setup-body .terminal {
+  margin-top: 0;
+}
+
+/* Fork */
+
+.fork-body {
+  width: 100%;
+}
+
+.fork-body > p {
+  margin: 0 0 25px;
+  font-size: 17px;
+  line-height: 1.5;
+}
+
+.fork-body .figma-button {
+  margin-bottom: 20px;
+}
+
+/* Identity */
+
+.identity-body {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  min-height: 150px;
+  text-align: left;
+}
+
+.identity-fields {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 18px;
+  width: min(500px, 100%);
+}
+
+.identity-field {
+  position: relative;
+  width: 100%;
+}
+
+.identity-field .figma-input {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.identity-field.is-saved .figma-input {
+  background: var(--accent-color);
+  border-color: var(--black-color);
+  box-shadow: 6px 6px 0 var(--black-color);
+}
+
+.input-saved {
+  position: absolute;
+  top: 50%;
+  right: 14px;
+  transform: translateY(-50%);
+  padding: 5px 8px;
+  color: var(--black-color);
+  background: var(--primary-color);
+  border: 2px solid var(--black-color);
+  box-shadow: 2px 2px 0 var(--black-color);
+  font-size: 11px;
+  font-weight: 900;
+  pointer-events: none;
 }
 
 /* Input */
@@ -145,6 +338,9 @@
   font-family: "Mabook", sans-serif;
   font-size: 16px;
   font-weight: bold;
+  transition:
+    background-color 0.15s ease,
+    box-shadow 0.15s ease;
 }
 
 .figma-input::placeholder {
@@ -335,8 +531,8 @@
   display: block;
   width: 14px;
   height: 14px;
-  border-radius: 50%;
   border: 2px solid #111;
+  border-radius: 50%;
   box-shadow: 1px 1px 0 #000;
 }
 
@@ -355,9 +551,11 @@
 .terminal-content {
   padding: 25px 28px 28px;
   background:
-    radial-gradient(circle at top right,
+    radial-gradient(
+      circle at top right,
       rgba(255, 255, 255, 0.035),
-      transparent 35%),
+      transparent 35%
+    ),
     #111;
 }
 
@@ -366,7 +564,7 @@
   padding: 2px 0;
 }
 
-.terminal-command+.terminal-command {
+.terminal-command + .terminal-command {
   margin-top: 28px;
 }
 
@@ -379,13 +577,13 @@
     "Roboto Mono",
     Consolas,
     monospace;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 600;
 }
 
 .terminal-code {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 12px;
   color: #f2f2f2;
   font-family:
@@ -406,6 +604,8 @@
 }
 
 .terminal-code code {
+  flex: 1;
+  min-width: 0;
   display: block;
   overflow-x: auto;
   color: #e8ffe9;
@@ -413,51 +613,38 @@
   overflow-wrap: anywhere;
 }
 
-/* Setup Git */
-
-.setup-body {
-  width: 100%;
+.terminal-command-copy {
+  padding: 4px 8px;
+  color: var(--text-color);
+  background: var(--card-color);
+  border: 1px solid var(--primary-color);
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 900;
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease,
+    transform 0.15s ease;
 }
 
-.step-highlight {
-  display: inline-block;
-  margin-bottom: 20px;
-  color: var(--page-heading-color);
-  font-size: clamp(25px, 4vw, 45px);
-  font-weight: bold;
-  line-height: 0.95;
-  text-shadow: 3px 3px 0 var(--page-shadow-color);
+.terminal-command-copy:hover {
+  color: var(--black-color);
+  background: var(--primary-color);
 }
 
-.setup-body .terminal {
-  margin-top: 10px;
+.terminal-command-copy:active {
+  color: var(--black-color);
+  background: var(--accent-color);
+  transform: translate(1px, 1px);
 }
 
-/* Fork */
-
-.fork-body {
-  width: 100%;
+.terminal-command-copy.is-copied {
+  color: var(--black-color);
+  background: var(--accent-color);
 }
 
-.fork-body>p {
-  margin: 0 0 25px;
-  font-size: 17px;
-  line-height: 1.5;
-}
-
-/* Push */
-
-.push-body {
-  width: 100%;
-}
-
-.push-body .terminal {
-  margin-top: 0;
-}
-
-/* =========================
-   MEME TEMPLATE SELECTOR
-   ========================= */
+/* Meme template selector */
 
 .meme-selector {
   width: 100%;
@@ -495,8 +682,8 @@
 
 .meme-horizontal-scroll::-webkit-scrollbar-thumb {
   background: var(--accent-color, #00ff66);
-  border-radius: 999px;
   border: 2px solid transparent;
+  border-radius: 999px;
   background-clip: padding-box;
 }
 
@@ -505,27 +692,27 @@
   flex: 0 0 210px;
   width: 210px;
   padding: 0;
-  border: 0;
-  background: transparent;
-  cursor: pointer;
-  text-align: center;
   color: inherit;
+  text-align: center;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
 }
 
 .meme-card-image-wrap {
   position: relative;
+  display: flex;
+  flex-direction: column;
   width: 100%;
   height: 250px;
   overflow: hidden;
-  border: 3px solid currentColor;
   background: #111;
+  border: 3px solid currentColor;
   box-shadow: 6px 6px 0 rgba(0, 0, 0, 0.3);
   transition:
     transform 0.18s ease,
     box-shadow 0.18s ease,
     border-color 0.18s ease;
-  display: flex;
-  flex-direction: column;
 }
 
 .meme-card:hover .meme-card-image-wrap {
@@ -542,42 +729,38 @@
 
 .meme-card .meme-image {
   display: block;
-  width: 100%;
   flex: 1;
+  width: 100%;
   min-height: 0;
   object-fit: contain;
 }
-
-/* Selected banner at TOP */
 
 .meme-selected-badge {
   width: 100%;
   flex-shrink: 0;
   box-sizing: border-box;
   padding: 7px 8px;
-  background: var(--accent-color, #00ff66);
   color: #000;
   text-align: center;
+  background: var(--accent-color, #00ff66);
   font-size: 0.72rem;
   font-weight: 900;
   letter-spacing: 0.08em;
   line-height: 1.1;
 }
 
-/* Meme title plaque at BOTTOM of frame */
-
 .meme-card-name {
-  width: 100%;
-  flex-shrink: 0;
-  box-sizing: border-box;
-  min-height: 38px;
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 100%;
+  min-height: 38px;
+  flex-shrink: 0;
+  box-sizing: border-box;
   padding: 7px 8px;
-  background: rgba(0, 0, 0, 0.88);
   color: #fff;
   text-align: center;
+  background: rgba(0, 0, 0, 0.88);
   font-size: 0.78rem;
   font-weight: 800;
   line-height: 1.1;
@@ -585,9 +768,7 @@
   text-transform: uppercase;
 }
 
-/* =========================
-   SUBMITTED MEMES / PAGE 9
-   ========================= */
+/* Submitted memes */
 
 .submitted-meme-scroll {
   display: flex;
@@ -612,17 +793,17 @@
 
 .submitted-meme-scroll::-webkit-scrollbar-thumb {
   background: var(--accent-color, #00ff66);
-  border-radius: 999px;
   border: 2px solid transparent;
+  border-radius: 999px;
   background-clip: padding-box;
 }
 
 .submitted-meme {
-  flex: 0 0 300px;
-  width: 300px;
   display: flex;
+  flex: 0 0 300px;
   flex-direction: column;
   align-items: stretch;
+  width: 300px;
 }
 
 .submitted-meme-frame {
@@ -630,8 +811,8 @@
   width: 100%;
   aspect-ratio: 1 / 1;
   overflow: hidden;
-  border: 3px solid currentColor;
   background: #111;
+  border: 3px solid currentColor;
   box-shadow: 6px 6px 0 rgba(0, 0, 0, 0.3);
 }
 
@@ -643,31 +824,27 @@
   background: #111;
 }
 
-/* Team plaque below the meme */
-
 .submitted-meme-team {
-  width: 100%;
-  box-sizing: border-box;
-  min-height: 42px;
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 100%;
+  min-height: 42px;
+  box-sizing: border-box;
   padding: 8px 12px;
-  background: var(--accent-color, #00ff66);
   color: #000;
+  text-align: center;
+  background: var(--accent-color, #00ff66);
   border: 3px solid currentColor;
   border-top: 0;
-  text-align: center;
+  box-shadow: 6px 6px 0 rgba(0, 0, 0, 0.3);
   font-size: 0.85rem;
   font-weight: 900;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  box-shadow: 6px 6px 0 rgba(0, 0, 0, 0.3);
 }
 
-/* =========================
-   GENERAL MEME STATES
-   ========================= */
+/* General meme states */
 
 .meme-loading {
   width: 100%;
@@ -678,9 +855,7 @@
   letter-spacing: 0.06em;
 }
 
-/* =========================
-   LONE WOLF
-   ========================= */
+/* Lone wolf */
 
 .lone-wolf-body {
   display: flex;
@@ -694,16 +869,16 @@
 .lone-wolf-message {
   display: flex;
   flex-direction: column;
-  gap: 8px;
   align-items: center;
+  gap: 8px;
 }
 
-.lone-wolf-message>strong {
+.lone-wolf-message > strong {
   font-size: 1.2rem;
   font-weight: 900;
 }
 
-.lone-wolf-message>span {
+.lone-wolf-message > span {
   font-size: 0.95rem;
   font-weight: 700;
 }
@@ -722,7 +897,6 @@
   max-width: 45%;
   height: auto;
   object-fit: contain;
-
   border: 3px solid var(--accent-color);
   border-radius: 12px;
   box-shadow: 5px 5px 0 var(--black-color);
@@ -742,10 +916,11 @@
   width: min(700px, 100%);
   padding: 45px;
   color: var(--text-color);
-  background: var(--primary-color);
-  border: 3px solid var(--black-color);
-  box-shadow: 8px 8px 0 var(--black-color);
   text-align: center;
+  background: var(--accent-color);
+  border: 3px solid var(--black-color);
+  border-radius: 1.6767px;
+  box-shadow: 8px 8px 0 var(--black-color);
 }
 
 .locked-icon {
@@ -753,17 +928,26 @@
   font-size: 45px;
 }
 
+.locked-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
 .locked-message h2 {
   margin: 0 0 20px;
   color: var(--page-heading-color);
   font-size: clamp(28px, 5vw, 52px);
   line-height: 0.95;
-  text-shadow: 4px 4px 0 var(--page-shadow-color);
+  text-shadow: 4px 4px 0 var(--card-color);
 }
 
 .locked-message p {
   max-width: 550px;
   margin: 0 auto 30px;
+  color: var(--card-color);
   font-size: 16px;
   line-height: 1.5;
 }
@@ -775,15 +959,15 @@
   z-index: 100;
   top: 25px;
   left: 50%;
-  transform: translateX(-50%);
   width: min(500px, calc(100% - 30px));
   box-sizing: border-box;
   padding: 14px 20px;
   color: var(--black-color);
+  text-align: center;
   background: var(--accent-color);
   border: 2px solid var(--black-color);
   box-shadow: 5px 5px 0 var(--black-color);
-  text-align: center;
+  transform: translateX(-50%);
   font-family: "Mabook", sans-serif;
   font-size: 13px;
   font-weight: 900;
@@ -797,11 +981,12 @@
   align-items: center;
   justify-content: space-between;
   width: 100%;
+  box-sizing: border-box;
   padding: 18px 25px;
+  margin-top: 50px;
   color: var(--black-color);
   background: var(--primary-color);
   border-top: 2px solid var(--black-color);
-  margin-top: 50px;
 }
 
 .page-arrow {
@@ -841,7 +1026,6 @@
 /* Tablet */
 
 @media (max-width: 1100px) {
-
   .content-page,
   .content-card {
     min-height: calc(100vh - 50px);
@@ -863,7 +1047,6 @@
 /* Mobile */
 
 @media (max-width: 700px) {
-
   .content-page,
   .content-card {
     min-height: calc(100vh - 17px);
@@ -890,6 +1073,20 @@
 
   .content-placeholder {
     margin-top: 35px;
+  }
+
+  .signup-layout {
+    gap: 25px;
+  }
+
+  .signup-action {
+    width: 100%;
+    gap: 25px;
+  }
+
+  .signup-image {
+    width: min(100%, 380px);
+    max-width: 100%;
   }
 
   .terminal {
@@ -933,7 +1130,7 @@
     padding: 20px 15px 22px;
   }
 
-  .terminal-command+.terminal-command {
+  .terminal-command + .terminal-command {
     margin-top: 22px;
   }
 
@@ -951,7 +1148,20 @@
     font-size: clamp(24px, 8vw, 38px);
   }
 
-  .fork-body>p {
+  .setup-option {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .setup-option-label {
+    width: fit-content;
+  }
+
+  .setup-download-button {
+    min-height: 45px;
+  }
+
+  .fork-body > p {
     font-size: 14px;
   }
 
@@ -961,6 +1171,15 @@
     padding: 10px 15px;
     font-size: 12px;
     text-align: center;
+  }
+
+  .identity-body {
+    align-items: flex-start;
+  }
+
+  .identity-fields {
+    width: min(500px, 100%);
+    align-items: stretch;
   }
 
   .meme-horizontal-scroll {
@@ -1009,11 +1228,11 @@
     font-size: 1rem;
   }
 
-  .lone-wolf-message>strong {
+  .lone-wolf-message > strong {
     font-size: clamp(25px, 8vw, 38px);
   }
 
-  .lone-wolf-message>span {
+  .lone-wolf-message > span {
     font-size: 15px;
   }
 
@@ -1041,14 +1260,19 @@
   .page-counter {
     font-size: 18px;
   }
+
+  .input-saved {
+    right: 10px;
+    font-size: 9px;
+  }
 }
 
 /* Very small phones */
 
 @media (max-width: 420px) {
   .content-content {
-    padding-left: 15px;
     padding-right: 15px;
+    padding-left: 15px;
   }
 
   .terminal-title {
@@ -1074,8 +1298,8 @@
   }
 
   .terminal-content {
-    padding-left: 12px;
     padding-right: 12px;
+    padding-left: 12px;
   }
 
   .meme-card {

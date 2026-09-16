@@ -6,7 +6,7 @@ const words = [
   "Code",
   "Memes",
   "Linux",
-  "LARP",
+  "Larp",
 ];
 
 export default function Ticker() {
@@ -22,20 +22,30 @@ export default function Ticker() {
 
     const speed = 60;
 
-    // Fill the track so there is always content across the banner.
-    const fillTrack = () => {
-      const tickerWidth = track.parentElement?.offsetWidth ?? 0;
+    const createSequence = () => {
+      words.forEach((word) => {
+        const wordSpan = document.createElement("span");
+        wordSpan.className = "ticker-word";
+        wordSpan.textContent = word;
 
-      while (track.scrollWidth < tickerWidth * 2) {
-        words.forEach((word) => {
-          const span = document.createElement("span");
-          span.textContent = `★ ${word}`;
-          track.appendChild(span);
-        });
-      }
+        const starSpan = document.createElement("span");
+        starSpan.className = "ticker-star";
+        starSpan.textContent = "★";
+
+        track.appendChild(wordSpan);
+        track.appendChild(starSpan);
+      });
     };
 
-    fillTrack();
+    // Start clean
+    track.innerHTML = "";
+
+    // Create enough content to fill the ticker
+    const tickerWidth = track.parentElement?.offsetWidth ?? 0;
+
+    while (track.scrollWidth < tickerWidth * 2) {
+      createSequence();
+    }
 
     const animate = (time: number) => {
       const delta = (time - lastTime) / 1000;
@@ -62,13 +72,7 @@ export default function Ticker() {
 
   return (
     <div className="ticker wenoselect">
-      <div className="ticker-track wenoselect" ref={trackRef}>
-        {words.map((word) => (
-          <span key={word}>
-            ★ {word}
-          </span>
-        ))}
-      </div>
+      <div className="ticker-track wenoselect" ref={trackRef} />
     </div>
   );
 }

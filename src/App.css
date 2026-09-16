@@ -1,10 +1,4 @@
-@font-face {
-  font-family: "Mabook";
-  src: url("/assets/fonts/Mabook.ttf") format("truetype");
-  font-display: swap;
-}
-
-:root :root {
+:root {
   --background-color: #5fed83;
   --card-color: #0a241b;
   --primary-color: #0fbf3e;
@@ -136,6 +130,28 @@
 
 html {
   scroll-behavior: smooth;
+}
+
+html {
+  scrollbar-width: auto;
+  scrollbar-color: var(--accent-color) var(--card-color);
+}
+
+html::-webkit-scrollbar {
+  width: 18px;
+}
+
+html::-webkit-scrollbar-track {
+  background: var(--card-color);
+}
+
+html::-webkit-scrollbar-thumb {
+  background: var(--accent-color);
+  border: 2px solid var(--card-color);
+}
+
+html::-webkit-scrollbar-thumb:hover {
+  background: var(--highlight-color);
 }
 
 body {
@@ -470,7 +486,7 @@ img {
   width: 100%;
   max-width: 470px;
   color: var(--text-color);
-  font-size: 14px;
+  font-size: 20px;
   line-height: 1.7;
 }
 
@@ -524,7 +540,7 @@ img {
 .ticker-track>span {
   display: block;
   flex: 0 0 auto;
-  padding: 0 18px;
+  padding: 0 7px;
 }
 
 /* ABOUT */
@@ -570,7 +586,7 @@ img {
   max-width: 400px;
   margin: 0 0 22px;
   color: var(--text-color);
-  font-size: 14px;
+  font-size: 20px;
   line-height: 1.75;
 }
 

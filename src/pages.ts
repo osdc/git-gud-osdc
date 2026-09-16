@@ -8,6 +8,7 @@ export type PageContent =
       kind: "button";
       text: string;
       href: string;
+      image?: string;
     }
   | {
       kind: "setup-git";
@@ -20,7 +21,7 @@ export type PageContent =
     }
   | {
       kind: "fork";
-      description: string[];
+      highlight: string;
       button: {
         text: string;
         href: string;
@@ -28,8 +29,7 @@ export type PageContent =
       steps: TerminalStep[];
     }
   | {
-      kind: "input";
-      placeholder: string;
+      kind: "identity";
     }
   | {
       kind: "choices";
@@ -64,11 +64,19 @@ export const pages: Page[] = [
       kind: "button",
       text: "CLICK HERE",
       href: "https://github.com/signup",
+      image:
+        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQn8vD2_oyPoBWtB12cSR0vcNMPaNimA80n2WVILpwWyA&s=10",
     },
   },
-
   {
     label: "Step Two",
+    title: "How will you be known?",
+    content: {
+      kind: "identity",
+    },
+  },
+  {
+    label: "Step Three",
     title: "SETUP GIT",
     content: {
       kind: "setup-git",
@@ -80,25 +88,24 @@ export const pages: Page[] = [
       steps: [
         {
           label: "Set your email",
-          code: 'git config --global user.email "your_email@example.com"',
+          code:
+            'git config --global user.email "your_email@example.com"',
         },
         {
           label: "Set username",
-          code: 'git config --global user.name "your_username"',
+          code:
+            'git config --global user.name "your_username"',
         },
       ],
     },
   },
-
   {
-    label: "Step Three",
+    label: "Step Four",
     title: "FORK",
     content: {
       kind: "fork",
-      description: [
-        "Go to the PROJECT'S PAGE ON GITHUB and click",
-        "the FORK button.",
-      ],
+      highlight:
+        "Go to the PROJECT'S PAGE ON GITHUB and click the FORK button.",
       button: {
         text: "CLICK HERE TO GO TO GITHUB REPO",
         href: "https://github.com/kartinul/GitGud",
@@ -110,21 +117,11 @@ export const pages: Page[] = [
         },
         {
           label: "Add origin",
-          code: "git remote add origin (your-fork-url)",
+          code: "git remote add origin ",
         },
       ],
     },
   },
-
-  {
-    label: "Step Four",
-    title: "ENTER TEAM NAME",
-    content: {
-      kind: "input",
-      placeholder: "ENTER TEAM NAME",
-    },
-  },
-
   {
     label: "Step Five",
     title: "SELECT NO. OF MEMBERS\nIN YOUR TEAM",
@@ -133,7 +130,6 @@ export const pages: Page[] = [
       choices: ["1", "2", "3"],
     },
   },
-
   {
     label: "Step Six",
     title: "WHICH TEAM MEMBER\nARE YOU?",
@@ -143,7 +139,6 @@ export const pages: Page[] = [
       choices: [],
     },
   },
-
   {
     label: "Choose your template!",
     title: "MEMES AVAILABLE:",
@@ -151,7 +146,6 @@ export const pages: Page[] = [
       kind: "memes",
     },
   },
-
   {
     label: "Step Seven",
     title: "CHANGE BRANCH",
@@ -177,7 +171,6 @@ export const pages: Page[] = [
       ],
     },
   },
-
   {
     label: "You did it!",
     title: "MEMES PUSHED",
