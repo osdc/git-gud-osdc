@@ -112,12 +112,21 @@ export const pages: Page[] = [
       },
       steps: [
         {
-          label: "Initialize a repo",
+          label: "Create a new folder",
+          code: "mkdir GitGud",
+        },
+        {
+          label: "Move into the folder",
+          code: "cd GitGud",
+        },
+        {
+          label: "Initialize the repository",
           code: "git init",
         },
         {
           label: "Add origin",
-          code: "git remote add origin ",
+          code:
+            "git remote add origin https://github.com/YOUR_GITHUB_ID/GitGud.git",
         },
       ],
     },
@@ -148,6 +157,24 @@ export const pages: Page[] = [
   },
   {
     label: "Step Seven",
+    title: "ADD YOUR CAPTION",
+    content: {
+      kind: "terminal",
+      note: 'Note: Replace "<enter_caption>" with your actual caption in quotes. Ex: "Tung Tung Tung Tung Tung Tung Sahur"',
+      steps: [
+        {
+          label: "Create your meme file",
+          code: 'echo "<selected_template>" > meme_name.txt',
+        },
+        {
+          label: "Create your caption file",
+          code: 'echo "enter_caption" > caption<team_member_number>.txt',
+        },
+      ],
+    },
+  },
+  {
+    label: "Step Eight",
     title: "CHANGE BRANCH",
     content: {
       kind: "terminal",

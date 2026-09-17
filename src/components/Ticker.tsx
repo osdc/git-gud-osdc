@@ -6,7 +6,7 @@ const words = [
   "Code",
   "Memes",
   "Linux",
-  "Larp",
+  "Larp"
 ];
 
 export default function Ticker() {

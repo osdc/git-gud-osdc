@@ -19,6 +19,8 @@
   box-shadow: 12px 15px 0 rgba(0, 0, 0, 0.15);
 }
 
+/* Keyboard navigation hint */
+
 .keyboard-navigation-hint {
   position: relative;
   width: 100%;
@@ -644,10 +646,13 @@
   background: var(--accent-color);
 }
 
-/* Meme template selector */
+/* =========================================================
+   Meme template selector
+   ========================================================= */
 
 .meme-selector {
   width: 100%;
+  min-width: 0;
 }
 
 .meme-selector-hint {
@@ -659,38 +664,114 @@
   opacity: 0.8;
 }
 
+/*
+ * Default / horizontal mode
+ */
 .meme-horizontal-scroll {
   display: flex;
+  flex-direction: row;
   gap: 18px;
   width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
   overflow-x: auto;
   overflow-y: hidden;
   padding: 8px 8px 18px;
   scroll-behavior: smooth;
   overscroll-behavior-x: contain;
   scrollbar-width: auto;
+  scrollbar-color: var(--accent-color) var(--card-color);
 }
 
 .meme-horizontal-scroll::-webkit-scrollbar {
+  width: 12px;
   height: 12px;
 }
 
 .meme-horizontal-scroll::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.12);
+  background: var(--card-color);
   border-radius: 999px;
 }
 
 .meme-horizontal-scroll::-webkit-scrollbar-thumb {
-  background: var(--accent-color, #00ff66);
-  border: 2px solid transparent;
+  background: var(--accent-color);
+  border: 2px solid var(--card-color);
   border-radius: 999px;
   background-clip: padding-box;
+}
+
+.meme-horizontal-scroll::-webkit-scrollbar-thumb:hover {
+  background: var(--page-heading-color);
+}
+
+.meme-horizontal-scroll::-webkit-scrollbar-corner {
+  background: var(--card-color);
+}
+
+.meme-horizontal-scroll.meme-scroll-vertical {
+  display: grid;
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(min(210px, 100%), 1fr)
+  );
+  align-items: start;
+  gap: 24px;
+  width: 100%;
+  max-width: 100%;
+  max-height: min(75vh, 800px);
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding: 10px 10px 22px;
+  box-sizing: border-box;
+  overscroll-behavior-x: none;
+  overscroll-behavior-y: contain;
+  scrollbar-color: var(--accent-color) var(--card-color);
+}
+
+.meme-horizontal-scroll.meme-scroll-vertical .meme-card {
+  width: 100%;
+  min-width: 0;
+  flex: none;
+}
+
+.meme-horizontal-scroll.meme-scroll-vertical .meme-card-image-wrap {
+  width: 100%;
+  height: auto;
+  min-height: 250px;
+  aspect-ratio: 210 / 250;
+}
+
+.meme-horizontal-scroll.meme-scroll-vertical::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+.meme-horizontal-scroll.meme-scroll-vertical::-webkit-scrollbar-track {
+  background: var(--card-color);
+  border-radius: 999px;
+}
+
+.meme-horizontal-scroll.meme-scroll-vertical::-webkit-scrollbar-thumb {
+  background: var(--accent-color);
+  border: 2px solid var(--card-color);
+  border-radius: 999px;
+  background-clip: padding-box;
+}
+
+.meme-horizontal-scroll.meme-scroll-vertical::-webkit-scrollbar-thumb:hover {
+  background: var(--page-heading-color);
+}
+
+.meme-horizontal-scroll.meme-scroll-vertical::-webkit-scrollbar-corner {
+  background: var(--card-color);
 }
 
 .meme-card {
   position: relative;
   flex: 0 0 210px;
   width: 210px;
+  min-width: 0;
   padding: 0;
   color: inherit;
   text-align: center;
@@ -721,9 +802,9 @@
 }
 
 .meme-card.is-selected .meme-card-image-wrap {
-  border-color: var(--accent-color, #00ff66);
+  border-color: var(--accent-color);
   box-shadow:
-    0 0 0 3px var(--accent-color, #00ff66),
+    0 0 0 3px var(--accent-color),
     8px 10px 0 rgba(0, 0, 0, 0.35);
 }
 
@@ -742,7 +823,7 @@
   padding: 7px 8px;
   color: #000;
   text-align: center;
-  background: var(--accent-color, #00ff66);
+  background: var(--accent-color);
   font-size: 0.72rem;
   font-weight: 900;
   letter-spacing: 0.08em;
@@ -768,34 +849,95 @@
   text-transform: uppercase;
 }
 
-/* Submitted memes */
+/* =========================================================
+   Submitted memes / Page 9
+   ========================================================= */
 
 .submitted-meme-scroll {
   display: flex;
+  flex-direction: row;
   gap: 20px;
   width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
   overflow-x: auto;
   overflow-y: hidden;
   padding: 8px 8px 18px;
   scroll-behavior: smooth;
   overscroll-behavior-x: contain;
   scrollbar-width: auto;
+  scrollbar-color: var(--accent-color) var(--card-color);
 }
 
 .submitted-meme-scroll::-webkit-scrollbar {
+  width: 12px;
   height: 12px;
 }
 
 .submitted-meme-scroll::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.12);
+  background: var(--card-color);
   border-radius: 999px;
 }
 
 .submitted-meme-scroll::-webkit-scrollbar-thumb {
-  background: var(--accent-color, #00ff66);
-  border: 2px solid transparent;
+  background: var(--accent-color);
+  border: 2px solid var(--card-color);
   border-radius: 999px;
   background-clip: padding-box;
+}
+
+.submitted-meme-scroll::-webkit-scrollbar-thumb:hover {
+  background: var(--page-heading-color);
+}
+
+.submitted-meme-scroll::-webkit-scrollbar-corner {
+  background: var(--card-color);
+}
+
+.submitted-meme-scroll.meme-scroll-vertical {
+  display: grid;
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(min(260px, 100%), 1fr)
+  );
+  align-items: start;
+  gap: 24px;
+  width: 100%;
+  max-width: 100%;
+  max-height: min(75vh, 800px);
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding: 10px 10px 22px;
+  box-sizing: border-box;
+  overscroll-behavior-x: none;
+  overscroll-behavior-y: contain;
+  scrollbar-color: var(--accent-color) var(--card-color);
+}
+
+.submitted-meme-scroll.meme-scroll-vertical::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+.submitted-meme-scroll.meme-scroll-vertical::-webkit-scrollbar-track {
+  background: var(--card-color);
+  border-radius: 999px;
+}
+
+.submitted-meme-scroll.meme-scroll-vertical::-webkit-scrollbar-thumb {
+  background: var(--accent-color);
+  border: 2px solid var(--card-color);
+  border-radius: 999px;
+  background-clip: padding-box;
+}
+
+.submitted-meme-scroll.meme-scroll-vertical::-webkit-scrollbar-thumb:hover {
+  background: var(--page-heading-color);
+}
+
+.submitted-meme-scroll.meme-scroll-vertical::-webkit-scrollbar-corner {
+  background: var(--card-color);
 }
 
 .submitted-meme {
@@ -804,6 +946,26 @@
   flex-direction: column;
   align-items: stretch;
   width: 300px;
+  min-width: 0;
+}
+
+.submitted-meme.is-your-meme .submitted-meme-frame {
+  border-color: var(--page-heading-color);
+  box-shadow:
+    0 0 0 4px var(--page-heading-color),
+    8px 10px 0 rgba(0, 0, 0, 0.35);
+}
+
+.submitted-meme.is-your-meme .submitted-meme-team {
+  color: var(--black-color);
+  background: var(--page-heading-color);
+  border-color: var(--black-color);
+}
+
+.submitted-meme-scroll.meme-scroll-vertical .submitted-meme {
+  width: 100%;
+  min-width: 0;
+  flex: none;
 }
 
 .submitted-meme-frame {
@@ -834,7 +996,7 @@
   padding: 8px 12px;
   color: #000;
   text-align: center;
-  background: var(--accent-color, #00ff66);
+  background: var(--accent-color);
   border: 3px solid currentColor;
   border-top: 0;
   box-shadow: 6px 6px 0 rgba(0, 0, 0, 0.3);
@@ -1023,7 +1185,9 @@
   font-weight: bold;
 }
 
-/* Tablet */
+/* =========================================================
+   Tablet
+   ========================================================= */
 
 @media (max-width: 1100px) {
   .content-page,
@@ -1042,9 +1206,22 @@
   .terminal {
     max-width: 100%;
   }
+
+  /*
+   * Two-column grid at tablet widths.
+   */
+  .meme-horizontal-scroll.meme-scroll-vertical {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .submitted-meme-scroll.meme-scroll-vertical {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
-/* Mobile */
+/* =========================================================
+   Mobile
+   ========================================================= */
 
 @media (max-width: 700px) {
   .content-page,
@@ -1182,6 +1359,9 @@
     align-items: stretch;
   }
 
+  /*
+   * Horizontal mode remains a horizontal carousel.
+   */
   .meme-horizontal-scroll {
     gap: 14px;
   }
@@ -1194,12 +1374,49 @@
     height: 275px;
   }
 
+  /*
+   * Vertical mode becomes a single-column grid on phones.
+   *
+   * On small screens "full width" means each meme uses the
+   * available gallery width and the next meme starts below it.
+   */
+  .meme-horizontal-scroll.meme-scroll-vertical {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 20px;
+    max-height: 70vh;
+    padding: 8px 8px 18px;
+  }
+
+  .meme-horizontal-scroll.meme-scroll-vertical .meme-card {
+    width: 100%;
+  }
+
+  .meme-horizontal-scroll.meme-scroll-vertical .meme-card-image-wrap {
+    min-height: 0;
+    aspect-ratio: 210 / 250;
+  }
+
   .submitted-meme-scroll {
     gap: 16px;
   }
 
   .submitted-meme {
     flex-basis: 275px;
+  }
+
+  /*
+   * Page 9 vertical mode is also full-width, one item per row
+   * on mobile.
+   */
+  .submitted-meme-scroll.meme-scroll-vertical {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 20px;
+    max-height: 70vh;
+    padding: 8px 8px 18px;
+  }
+
+  .submitted-meme-scroll.meme-scroll-vertical .submitted-meme {
+    width: 100%;
   }
 
   .meme-selected-badge {
@@ -1267,7 +1484,9 @@
   }
 }
 
-/* Very small phones */
+/* =========================================================
+   Very small phones
+   ========================================================= */
 
 @media (max-width: 420px) {
   .content-content {
@@ -1310,7 +1529,29 @@
     height: 250px;
   }
 
+  .meme-horizontal-scroll.meme-scroll-vertical {
+    max-height: 68vh;
+    gap: 16px;
+    padding-right: 6px;
+    padding-left: 6px;
+  }
+
+  .meme-horizontal-scroll.meme-scroll-vertical .meme-card {
+    width: 100%;
+  }
+
   .submitted-meme {
     flex-basis: 240px;
+  }
+
+  .submitted-meme-scroll.meme-scroll-vertical {
+    max-height: 68vh;
+    gap: 16px;
+    padding-right: 6px;
+    padding-left: 6px;
+  }
+
+  .submitted-meme-scroll.meme-scroll-vertical .submitted-meme {
+    width: 100%;
   }
 }

@@ -51,12 +51,26 @@ const themes = [
   "theme-mono",
 ];
 
+const themeNames = [
+  "Terminal Green",
+  "Cyber Blue",
+  "High Contrast",
+  "Violet Void",
+  "Sunset.exe",
+  "Bubblegum Punk",
+  "Electric Cyan",
+  "Monochrome",
+];
+
 const STORAGE_KEYS = {
   githubId: "gitgud-github-id",
+  emailId: "gitgud-email-id",
   teamName: "gitgud-team-name",
   teamSize: "gitgud-team-size",
   teamMember: "gitgud-team-member",
   themeIndex: "gitgud-theme-index",
+  scrollFormat: "gitgud-scroll-format",
+  currentPage: "gitgud-current-page",
 };
 
 function readStorageString(key: string): string {
@@ -117,7 +131,7 @@ function readTeamMember(): number | null {
   );
 
   if (
-    member &&
+    member !== null &&
     member >= 1 &&
     member <= teamSize
   ) {
@@ -140,13 +154,39 @@ function readThemeIndex(): number {
     return value;
   }
 
+  return 4;
+}
+
+function readScrollFormat(): "horizontal" | "vertical" {
+  const value = readStorageString(
+    STORAGE_KEYS.scrollFormat,
+  );
+
+  return value === "vertical"
+    ? "vertical"
+    : "horizontal";
+}
+
+function readCurrentPage(): number {
+  const value = readStorageNumber(
+    STORAGE_KEYS.currentPage,
+  );
+
+  if (
+    value !== null &&
+    value >= 0 &&
+    value <= pages.length
+  ) {
+    return value;
+  }
+
   return 0;
 }
 
 function saveStorageValue(
   key: string,
   value: string,
-) {
+): void {
   try {
     window.localStorage.setItem(key, value);
   } catch {}
@@ -161,19 +201,21 @@ async function fetchProgress(): Promise<number> {
       },
     );
 
-    if (response.ok) {
-      const data = await response.json();
+    if (!response.ok) {
+      return 0;
+    }
 
-      if (
-        data &&
-        typeof data.progress === "number"
-      ) {
-        return data.progress;
-      }
+    const data = await response.json();
 
-      if (typeof data === "number") {
-        return data;
-      }
+    if (
+      data &&
+      typeof data.progress === "number"
+    ) {
+      return data.progress;
+    }
+
+    if (typeof data === "number") {
+      return data;
     }
 
     return 0;
@@ -189,15 +231,27 @@ async function fetchProgress(): Promise<number> {
 
 function App() {
   const [currentPage, setCurrentPage] =
-    useState(0);
+    useState(() => readCurrentPage());
 
   const [themeIndex, setThemeIndex] =
     useState(() => readThemeIndex());
+
+  const [scrollFormat, setScrollFormat] =
+    useState<"horizontal" | "vertical">(() =>
+      readScrollFormat(),
+    );
 
   const [githubId, setGithubId] =
     useState(() =>
       readStorageString(
         STORAGE_KEYS.githubId,
+      ),
+    );
+
+  const [emailId, setEmailId] =
+    useState(() =>
+      readStorageString(
+        STORAGE_KEYS.emailId,
       ),
     );
 
@@ -219,19 +273,23 @@ function App() {
     );
 
   const [maxAllowedPage, setMaxAllowedPage] =
-    useState(1);
+    useState(0);
 
   const [showLockMessage, setShowLockMessage] =
+    useState(false);
+
+  const [isNavigating, setIsNavigating] =
     useState(false);
 
   const lockMessageTimer =
     useRef<number | null>(null);
 
   useEffect(() => {
-    if (currentPage > maxAllowedPage + 1) {
-      setCurrentPage(maxAllowedPage);
-    }
-  }, [maxAllowedPage, currentPage]);
+    saveStorageValue(
+      STORAGE_KEYS.currentPage,
+      String(currentPage),
+    );
+  }, [currentPage]);
 
   useEffect(() => {
     saveStorageValue(
@@ -239,6 +297,13 @@ function App() {
       String(themeIndex),
     );
   }, [themeIndex]);
+
+  useEffect(() => {
+    saveStorageValue(
+      STORAGE_KEYS.scrollFormat,
+      scrollFormat,
+    );
+  }, [scrollFormat]);
 
   useEffect(() => {
     let cancelled = false;
@@ -279,6 +344,43 @@ function App() {
     );
   };
 
+  const selectTheme = (index: number) => {
+    if (
+      index >= 0 &&
+      index < themes.length
+    ) {
+      setThemeIndex(index);
+    }
+  };
+
+  const changeScrollFormat = (
+    format: "horizontal" | "vertical",
+  ) => {
+    setScrollFormat(format);
+  };
+
+  const resetExperience = () => {
+    try {
+      Object.values(STORAGE_KEYS).forEach(
+        (key) => {
+          window.localStorage.removeItem(key);
+        },
+      );
+    } catch {}
+
+    setCurrentPage(0);
+    setThemeIndex(4);
+    setScrollFormat("horizontal");
+    setGithubId("");
+    setEmailId("");
+    setTeamName("");
+    setTeamSize(null);
+    setTeamMemberNumber(null);
+    setShowLockMessage(false);
+    setMaxAllowedPage(0);
+    setIsNavigating(false);
+  };
+
   const showLockedMessage = () => {
     setShowLockMessage(true);
 
@@ -296,16 +398,55 @@ function App() {
       }, 4500);
   };
 
-  const [isNavigating, setIsNavigating] =
-    useState(false);
+  const isPageLocked = (
+    page: number,
+    progress: number,
+  ) => {
+    if (page === 0) {
+      return false;
+    }
+
+    if (page === pages.length) {
+      return progress === -2;
+    }
+
+    if (progress === -2) {
+      return false;
+    }
+
+    return page > progress;
+  };
+
+  const goHome = () => {
+    setIsNavigating(false);
+    setShowLockMessage(false);
+    setCurrentPage(0);
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  };
 
   const goToPage = async (page: number) => {
-    if (isNavigating) return;
+    if (page === 0) {
+      goHome();
+      return;
+    }
+
+    if (isNavigating) {
+      return;
+    }
 
     const nextPage =
       page > pages.length
         ? 1
         : Math.max(0, page);
+
+    if (nextPage === 0) {
+      goHome();
+      return;
+    }
 
     if (nextPage > currentPage) {
       setIsNavigating(true);
@@ -315,7 +456,7 @@ function App() {
 
         setMaxAllowedPage(progress);
 
-        if (nextPage > progress + 1) {
+        if (isPageLocked(nextPage, progress)) {
           showLockedMessage();
           return;
         }
@@ -334,7 +475,14 @@ function App() {
   };
 
   const retryProgress = async () => {
-    if (isNavigating) return;
+    if (isNavigating) {
+      return;
+    }
+
+    if (currentPage === 0) {
+      goHome();
+      return;
+    }
 
     setIsNavigating(true);
 
@@ -343,12 +491,7 @@ function App() {
 
       setMaxAllowedPage(progress);
 
-      if (currentPage <= progress) {
-        setShowLockMessage(false);
-        return;
-      }
-
-      if (currentPage === progress + 1) {
+      if (!isPageLocked(currentPage, progress)) {
         setShowLockMessage(false);
         return;
       }
@@ -366,6 +509,17 @@ function App() {
 
     saveStorageValue(
       STORAGE_KEYS.githubId,
+      value,
+    );
+  };
+
+  const handleEmailIdChange = (
+    value: string,
+  ) => {
+    setEmailId(value);
+
+    saveStorageValue(
+      STORAGE_KEYS.emailId,
       value,
     );
   };
@@ -454,21 +608,33 @@ function App() {
     >
       {isNavigating && (
         <div className="navigation-overlay">
-          <div className="spinner"></div>
+          <div className="spinner" />
           LOADING...
         </div>
       )}
 
       {currentPage === 0 ? (
         <HomePage
+          onHome={goHome}
           onNext={() => goToPage(1)}
           onThemeChange={changeTheme}
-          onMemesClick={() => goToPage(9)}
+          onThemeSelect={selectTheme}
+          themeIndex={themeIndex}
+          themes={themes}
+          scrollFormat={scrollFormat}
+          onScrollFormatChange={
+            changeScrollFormat
+          }
+          onResetExperience={resetExperience}
+          onMemesClick={() =>
+            goToPage(pages.length)
+          }
           maxAllowedPage={maxAllowedPage}
           showLockMessage={showLockMessage}
         />
       ) : (
         <ContentPage
+          onHome={goHome}
           pageIndex={currentPage}
           onPrevious={() =>
             goToPage(currentPage - 1)
@@ -477,15 +643,29 @@ function App() {
             goToPage(currentPage + 1)
           }
           onThemeChange={changeTheme}
-          onMemesClick={() => goToPage(9)}
+          onThemeSelect={selectTheme}
+          themeIndex={themeIndex}
+          themes={themes}
+          scrollFormat={scrollFormat}
+          onScrollFormatChange={
+            changeScrollFormat
+          }
+          onResetExperience={resetExperience}
+          onMemesClick={() =>
+            goToPage(pages.length)
+          }
           maxAllowedPage={maxAllowedPage}
           onRetryProgress={retryProgress}
           githubId={githubId}
+          emailId={emailId}
           teamName={teamName}
           teamSize={teamSize}
           teamMemberNumber={teamMemberNumber}
           onGithubIdChange={
             handleGithubIdChange
+          }
+          onEmailIdChange={
+            handleEmailIdChange
           }
           onTeamNameChange={
             handleTeamNameChange
@@ -504,14 +684,30 @@ function App() {
 }
 
 function HomePage({
+  onHome,
   onNext,
   onThemeChange,
+  onThemeSelect,
+  themeIndex,
+  themes,
+  scrollFormat,
+  onScrollFormatChange,
+  onResetExperience,
   onMemesClick,
   maxAllowedPage,
   showLockMessage,
 }: {
+  onHome: () => void;
   onNext: () => void;
   onThemeChange: () => void;
+  onThemeSelect: (index: number) => void;
+  themeIndex: number;
+  themes: string[];
+  scrollFormat: "horizontal" | "vertical";
+  onScrollFormatChange: (
+    format: "horizontal" | "vertical",
+  ) => void;
+  onResetExperience: () => void;
   onMemesClick: () => void;
   maxAllowedPage: number;
   showLockMessage: boolean;
@@ -534,7 +730,16 @@ function HomePage({
         }}
       >
         <Navbar
+          onHomeClick={onHome}
           onThemeChange={onThemeChange}
+          onThemeSelect={onThemeSelect}
+          themeIndex={themeIndex}
+          themes={themeNames}
+          scrollFormat={scrollFormat}
+          onScrollFormatChange={
+            onScrollFormatChange
+          }
+          onResetExperience={onResetExperience}
           onMemesClick={onMemesClick}
           maxAllowedPage={maxAllowedPage}
         />
@@ -713,6 +918,8 @@ function HomePage({
             </motion.div>
           </motion.section>
         </main>
+
+        <Ticker />
       </motion.div>
     </section>
   );

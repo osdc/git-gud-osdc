@@ -1,5 +1,5 @@
 import { motion, type Variants } from "motion/react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Navbar from "./Navbar";
 import Ticker from "./Ticker";
 import { pages, type TerminalStep } from "../pages";
@@ -10,6 +10,7 @@ import { API_BASE_URL } from "../config";
 
 const STORAGE_KEYS = {
   githubId: "gitgud-github-id",
+  emailId: "gitgud-email-id",
   teamName: "gitgud-team-name",
   teamSize: "gitgud-team-size",
   memberNumber: "gitgud-member-number",
@@ -26,6 +27,17 @@ const containerVariants: Variants = {
     },
   },
 };
+
+const themeNames = [
+  "Terminal Green",
+  "Cyber Blue",
+  "High Contrast",
+  "Violet Void",
+  "Sunset.exe",
+  "Bubblegum Punk",
+  "Electric Cyan",
+  "Monochrome",
+];
 
 const itemVariants: Variants = {
   hidden: {
@@ -47,11 +59,21 @@ type ContentPageProps = {
   onPrevious: () => void;
   onNext: () => void;
   onThemeChange: () => void;
+  onThemeSelect: (index: number) => void;
+  themeIndex: number;
+  themes: string[];
+  scrollFormat: "horizontal" | "vertical";
+  onScrollFormatChange: (
+    format: "horizontal" | "vertical",
+  ) => void;
+  onResetExperience: () => void;
   githubId: string;
+  emailId: string;
   teamName: string;
   teamSize: number | null;
   teamMemberNumber: number | null;
   onGithubIdChange: (value: string) => void;
+  onEmailIdChange: (value: string) => void;
   onTeamNameChange: (value: string) => void;
   onTeamSizeChange: (value: number) => void;
   onTeamMemberChange: (value: number) => void;
@@ -59,6 +81,7 @@ type ContentPageProps = {
   onMemesClick: () => void;
   maxAllowedPage: number;
   onRetryProgress: () => void;
+  onHome: () => void;
 };
 
 type SubmittedMeme = {
@@ -104,7 +127,9 @@ function ArrowButton({
         scale: 0.92,
       }}
       aria-label={
-        direction === "left" ? "Previous page" : "Next page"
+        direction === "left"
+          ? "Previous page"
+          : "Next page"
       }
     >
       {direction === "left" ? "←" : "→"}
@@ -138,11 +163,11 @@ function KeyboardNavigationHint({
         </div>
 
         <div>
-          Go back and forth between screens using the navigation
-          buttons below, or use
-          <span className="keyboard-key">🡸</span>
+          Go back and forth between screens using the
+          navigation buttons below, or use
+          <span className="keyboard-key">◀</span>
           and
-          <span className="keyboard-key">🡺</span>
+          <span className="keyboard-key">▶</span>
           arrow keys.
         </div>
       </div>
@@ -155,9 +180,14 @@ function Terminal({
 }: {
   steps: TerminalStep[];
 }) {
-  const [copied, setCopied] = useState<number | null>(null);
+  const [copied, setCopied] = useState<number | null>(
+    null,
+  );
 
-  const copyText = async (text: string, index: number) => {
+  const copyText = async (
+    text: string,
+    index: number,
+  ) => {
     try {
       await navigator.clipboard.writeText(text);
       setCopied(index);
@@ -173,7 +203,9 @@ function Terminal({
   };
 
   const copyAll = async () => {
-    const text = steps.map((step) => step.code).join("\n");
+    const text = steps
+      .map((step) => step.code)
+      .join("\n");
 
     try {
       await navigator.clipboard.writeText(text);
@@ -192,7 +224,9 @@ function Terminal({
   return (
     <div className="terminal">
       <div className="terminal-header">
-        <span className="terminal-title">Terminal</span>
+        <span className="terminal-title">
+          Terminal
+        </span>
 
         <div className="terminal-actions">
           <button
@@ -229,7 +263,9 @@ function Terminal({
             className="terminal-command"
             key={`${step.label}-${index}`}
           >
-            <div className="terminal-label">{step.label}</div>
+            <div className="terminal-label">
+              {step.label}
+            </div>
 
             <div className="terminal-code">
               <span
@@ -244,12 +280,18 @@ function Terminal({
               <button
                 type="button"
                 className={`terminal-command-copy${
-                  copied === index ? " is-copied" : ""
+                  copied === index
+                    ? " is-copied"
+                    : ""
                 }`}
-                onClick={() => copyText(step.code, index)}
+                onClick={() =>
+                  copyText(step.code, index)
+                }
                 aria-label={`Copy ${step.label} command`}
               >
-                {copied === index ? "Copied" : "Copy"}
+                {copied === index
+                  ? "Copied"
+                  : "Copy"}
               </button>
             </div>
           </div>
@@ -261,8 +303,10 @@ function Terminal({
 
 function MemeGallery({
   teamSize,
+  scrollFormat,
 }: {
   teamSize: number | null;
+  scrollFormat: "horizontal" | "vertical";
 }) {
   const [selectedTemplate, setSelectedTemplate] =
     useState(getSelectedTemplate);
@@ -306,12 +350,15 @@ function MemeGallery({
     <div className="meme-selector">
       <div className="meme-selector-hint">
         {getSubtitle()}
+
         {selectedTemplate
           ? ` • SELECTED: ${selectedTemplate}`
           : ""}
       </div>
 
-      <div className="meme-horizontal-scroll">
+      <div
+        className={`meme-horizontal-scroll meme-scroll-${scrollFormat}`}
+      >
         {templates.map((template) => {
           const isSelected =
             selectedTemplate === template.id;
@@ -359,10 +406,15 @@ function MemeGallery({
   );
 }
 
-async function fetchSubmittedImages(): Promise<string[]> {
-  const response = await fetch(`${API_BASE_URL}/image/get`, {
-    cache: "no-store",
-  });
+async function fetchSubmittedImages(): Promise<
+  string[]
+> {
+  const response = await fetch(
+    `${API_BASE_URL}/image/get`,
+    {
+      cache: "no-store",
+    },
+  );
 
   if (!response.ok) {
     throw new Error(
@@ -379,19 +431,33 @@ async function fetchSubmittedImages(): Promise<string[]> {
   return data as string[];
 }
 
-function SubmittedMemes() {
-  const [memes, setMemes] = useState<SubmittedMeme[]>([]);
+function SubmittedMemes({
+  scrollFormat,
+}: {
+  scrollFormat: "horizontal" | "vertical";
+}) {
+  const [memes, setMemes] = useState<
+    SubmittedMeme[]
+  >([]);
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+
+  const [highlightedTeam, setHighlightedTeam] =
+    useState<string | null>(null);
+
+  const scrollContainerRef =
+    useRef<HTMLDivElement | null>(null);
+
+  const previousTeamsRef = useRef<Set<string>>(
+    new Set(),
+  );
 
   useEffect(() => {
     let cancelled = false;
 
     async function loadSubmissions() {
       try {
-        setLoading(true);
-        setError(false);
-
         const paths = await fetchSubmittedImages();
 
         if (cancelled) {
@@ -417,7 +483,53 @@ function SubmittedMemes() {
           };
         });
 
+        const previousTeams =
+          previousTeamsRef.current;
+
         setMemes(results);
+        setLoading(false);
+        setError(false);
+
+        const currentTeamName =
+          readStorage(STORAGE_KEYS.teamName);
+
+        if (
+          currentTeamName &&
+          !previousTeams.has(currentTeamName)
+        ) {
+          const submittedMeme = results.find(
+            (meme) => meme.team === currentTeamName,
+          );
+
+          if (submittedMeme) {
+            setHighlightedTeam(
+              submittedMeme.team,
+            );
+
+            window.requestAnimationFrame(() => {
+              const container =
+                scrollContainerRef.current;
+
+              const element = container?.querySelector(
+                `[data-team-name="${CSS.escape(
+                  submittedMeme.team,
+                )}"]`,
+              );
+
+              if (element instanceof HTMLElement) {
+                element.scrollIntoView({
+                  behavior: "smooth",
+                  block: "nearest",
+                  inline: "center",
+                });
+              }
+            });
+          }
+        }
+
+        previousTeamsRef.current = new Set(
+          results.map((meme) => meme.team),
+        );
       } catch (e) {
         if (!cancelled) {
           console.error(
@@ -426,9 +538,6 @@ function SubmittedMemes() {
           );
 
           setError(true);
-        }
-      } finally {
-        if (!cancelled) {
           setLoading(false);
         }
       }
@@ -436,8 +545,14 @@ function SubmittedMemes() {
 
     loadSubmissions();
 
+    const interval = window.setInterval(
+      loadSubmissions,
+      5000,
+    );
+
     return () => {
       cancelled = true;
+      window.clearInterval(interval);
     };
   }, []);
 
@@ -449,7 +564,7 @@ function SubmittedMemes() {
     );
   }
 
-  if (error) {
+  if (error && memes.length === 0) {
     return (
       <div className="meme-loading">
         COULD NOT LOAD SUBMISSIONS.
@@ -466,10 +581,18 @@ function SubmittedMemes() {
   }
 
   return (
-    <div className="submitted-meme-scroll">
+    <div
+      ref={scrollContainerRef}
+      className={`submitted-meme-scroll meme-scroll-${scrollFormat}`}
+    >
       {memes.map((meme) => (
         <div
-          className="submitted-meme"
+          className={`submitted-meme${
+            highlightedTeam === meme.team
+              ? " is-your-meme"
+              : ""
+          }`}
+          data-team-name={meme.team}
           key={meme.team}
         >
           <div className="submitted-meme-frame">
@@ -501,7 +624,9 @@ function TeamMemberPage({
   onTeamMemberChange: (value: number) => void;
 }) {
   const effectiveTeamSize =
-    teamSize && teamSize >= 1 && teamSize <= 3
+    teamSize &&
+    teamSize >= 1 &&
+    teamSize <= 3
       ? teamSize
       : 1;
 
@@ -514,7 +639,9 @@ function TeamMemberPage({
     return (
       <div className="step-body lone-wolf-body">
         <div className="lone-wolf-message">
-          <strong>Lone wolf, all the best!</strong>
+          <strong>
+            Lone wolf, all the best!
+          </strong>
 
           <span>
             You have been assigned as member 1
@@ -583,21 +710,25 @@ function TeamMemberPage({
 
 function IdentityPage({
   githubId,
+  emailId,
   teamName,
   onGithubIdChange,
+  onEmailIdChange,
   onTeamNameChange,
 }: {
   githubId: string;
+  emailId: string;
   teamName: string;
   onGithubIdChange: (value: string) => void;
+  onEmailIdChange: (value: string) => void;
   onTeamNameChange: (value: string) => void;
 }) {
   const [savedField, setSavedField] = useState<
-    "githubId" | "teamName" | null
+    "githubId" | "emailId" | "teamName" | null
   >(null);
 
   const saveField = (
-    field: "githubId" | "teamName",
+    field: "githubId" | "emailId" | "teamName",
     value: string,
   ) => {
     const trimmedValue = value.trim();
@@ -608,6 +739,8 @@ function IdentityPage({
 
     if (field === "githubId") {
       onGithubIdChange(trimmedValue);
+    } else if (field === "emailId") {
+      onEmailIdChange(trimmedValue);
     } else {
       onTeamNameChange(trimmedValue);
     }
@@ -639,7 +772,9 @@ function IdentityPage({
             value={githubId}
             onChange={(event) => {
               setSavedField(null);
-              onGithubIdChange(event.target.value);
+              onGithubIdChange(
+                event.target.value,
+              );
             }}
             onKeyDown={(event) => {
               if (event.key === "Enter") {
@@ -662,6 +797,44 @@ function IdentityPage({
 
         <div
           className={`identity-field${
+            savedField === "emailId"
+              ? " is-saved"
+              : ""
+          }`}
+        >
+          <input
+            className="figma-input"
+            type="email"
+            name="emailId"
+            placeholder="ENTER YOUR EMAIL ID (WE DO NOT STORE IT)"
+            value={emailId}
+            onChange={(event) => {
+              setSavedField(null);
+              onEmailIdChange(
+                event.target.value,
+              );
+            }}
+            onKeyDown={(event) => {
+              if (event.key === "Enter") {
+                event.preventDefault();
+
+                saveField(
+                  "emailId",
+                  event.currentTarget.value,
+                );
+              }
+            }}
+          />
+
+          {savedField === "emailId" && (
+            <span className="input-saved">
+              SAVED ✓
+            </span>
+          )}
+        </div>
+
+        <div
+          className={`identity-field${
             savedField === "teamName"
               ? " is-saved"
               : ""
@@ -675,7 +848,9 @@ function IdentityPage({
             value={teamName}
             onChange={(event) => {
               setSavedField(null);
-              onTeamNameChange(event.target.value);
+              onTeamNameChange(
+                event.target.value,
+              );
             }}
             onKeyDown={(event) => {
               if (event.key === "Enter") {
@@ -704,24 +879,30 @@ function PageBody({
   content,
   pageIndex,
   githubId,
+  emailId,
   teamName,
   teamSize,
   teamMemberNumber,
   onGithubIdChange,
+  onEmailIdChange,
   onTeamNameChange,
   onTeamSizeChange,
   onTeamMemberChange,
+  scrollFormat,
 }: {
   content: (typeof pages)[number]["content"];
   pageIndex: number;
   githubId: string;
+  emailId: string;
   teamName: string;
   teamSize: number | null;
   teamMemberNumber: number | null;
   onGithubIdChange: (value: string) => void;
+  onEmailIdChange: (value: string) => void;
   onTeamNameChange: (value: string) => void;
   onTeamSizeChange: (value: number) => void;
   onTeamMemberChange: (value: number) => void;
+  scrollFormat: "horizontal" | "vertical";
 }) {
   switch (content.kind) {
     case "button":
@@ -780,16 +961,27 @@ function PageBody({
           </div>
 
           <Terminal
-            steps={content.steps.map((step) =>
-              step.label === "Set username"
-                ? {
-                    ...step,
-                    code: `git config --global user.name "${
-                      githubId || "your_username"
-                    }"`,
-                  }
-                : step,
-            )}
+            steps={content.steps.map((step) => {
+              if (step.label === "Set your email") {
+                return {
+                  ...step,
+                  code: `git config --global user.email "${
+                    emailId || "your_email@example.com"
+                  }"`,
+                };
+              }
+
+              if (step.label === "Set username") {
+                return {
+                  ...step,
+                  code: `git config --global user.name "${
+                    githubId || "your_username"
+                  }"`,
+                };
+              }
+
+              return step;
+            })}
           />
         </div>
       );
@@ -815,7 +1007,7 @@ function PageBody({
               step.label === "Add origin"
                 ? {
                     ...step,
-                    code: `git remote add origin https://github.com/${githubId}/GitGud`,
+                    code: `git remote add origin https://github.com/${githubId}/GitGud.git`,
                   }
                 : step,
             )}
@@ -827,8 +1019,10 @@ function PageBody({
       return (
         <IdentityPage
           githubId={githubId}
+          emailId={emailId}
           teamName={teamName}
           onGithubIdChange={onGithubIdChange}
+          onEmailIdChange={onEmailIdChange}
           onTeamNameChange={onTeamNameChange}
         />
       );
@@ -871,7 +1065,9 @@ function PageBody({
           <TeamMemberPage
             teamSize={teamSize}
             teamMemberNumber={teamMemberNumber}
-            onTeamMemberChange={onTeamMemberChange}
+            onTeamMemberChange={
+              onTeamMemberChange
+            }
           />
         );
       }
@@ -917,17 +1113,64 @@ function PageBody({
 
     case "memes":
       if (pageIndex === pages.length) {
-        return <SubmittedMemes />;
+        return (
+          <SubmittedMemes
+            scrollFormat={scrollFormat}
+          />
+        );
       }
 
-      return <MemeGallery teamSize={teamSize} />;
+      return (
+        <MemeGallery
+          teamSize={teamSize}
+          scrollFormat={scrollFormat}
+        />
+      );
 
-    case "terminal":
+    case "terminal": {
+      const isCaptionPage = pageIndex === 8;
+
+      if (!isCaptionPage) {
+        return (
+          <div className="step-body push-body">
+            <Terminal steps={content.steps} />
+          </div>
+        );
+      }
+
+      const selectedTemplate =
+        getSelectedTemplate();
+
+      const memberNumber =
+        teamMemberNumber ?? 1;
+
+      const pageEightSteps: TerminalStep[] =
+        content.steps.map((step) => ({
+          ...step,
+          code: step.code
+            .replace(
+              /<selected_template>/g,
+              selectedTemplate ||
+                "selected_template",
+            )
+            .replace(
+              /<team_member_number>/g,
+              String(memberNumber),
+            ),
+        }));
+
       return (
         <div className="step-body push-body">
-          <Terminal steps={content.steps} />
+          {content.note && (
+            <p className="terminal-note">
+              {content.note}
+            </p>
+          )}
+
+          <Terminal steps={pageEightSteps} />
         </div>
       );
+    }
 
     default:
       return null;
@@ -985,18 +1228,27 @@ export default function ContentPage({
   onPrevious,
   onNext,
   onThemeChange,
+  onThemeSelect,
+  themeIndex,
+  themes,
+  scrollFormat,
+  onScrollFormatChange,
+  onResetExperience,
   onMemesClick,
   maxAllowedPage,
   onRetryProgress,
   githubId,
+  emailId,
   teamName,
   teamSize,
   teamMemberNumber,
   onGithubIdChange,
+  onEmailIdChange,
   onTeamNameChange,
   onTeamSizeChange,
   onTeamMemberChange,
   showLockMessage,
+  onHome,
 }: ContentPageProps) {
   const [showKeyboardHint, setShowKeyboardHint] =
     useState(() => {
@@ -1012,8 +1264,11 @@ export default function ContentPage({
     });
 
   useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      const target = event.target as HTMLElement | null;
+    const handleKeyDown = (
+      event: KeyboardEvent,
+    ) => {
+      const target =
+        event.target as HTMLElement | null;
 
       if (
         target?.tagName === "INPUT" ||
@@ -1034,7 +1289,10 @@ export default function ContentPage({
       }
     };
 
-    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener(
+      "keydown",
+      handleKeyDown,
+    );
 
     return () => {
       window.removeEventListener(
@@ -1054,7 +1312,17 @@ export default function ContentPage({
   };
 
   const page = pages[pageIndex - 1];
-  const locked = pageIndex > maxAllowedPage;
+
+  const memesLocked =
+    pageIndex === pages.length &&
+    maxAllowedPage === -2;
+
+  const normalPageLocked =
+    pageIndex !== pages.length &&
+    pageIndex > maxAllowedPage;
+
+  const locked =
+    memesLocked || normalPageLocked;
 
   if (!page) {
     return null;
@@ -1065,7 +1333,18 @@ export default function ContentPage({
       <section className="page content-page">
         <div className="content-card">
           <Navbar
+            onHomeClick={onHome}
             onThemeChange={onThemeChange}
+            onThemeSelect={onThemeSelect}
+            themeIndex={themeIndex}
+            themes={themeNames}
+            scrollFormat={scrollFormat}
+            onScrollFormatChange={
+              onScrollFormatChange
+            }
+            onResetExperience={
+              onResetExperience
+            }
             onMemesClick={onMemesClick}
             maxAllowedPage={maxAllowedPage}
           />
@@ -1095,7 +1374,9 @@ export default function ContentPage({
 
             <div
               className="page-arrow page-arrow-placeholder"
-              style={{ visibility: "hidden" }}
+              style={{
+                visibility: "hidden",
+              }}
             >
               →
             </div>
@@ -1109,7 +1390,16 @@ export default function ContentPage({
     <section className="page content-page">
       <div className="content-card">
         <Navbar
+          onHomeClick={onHome}
           onThemeChange={onThemeChange}
+          onThemeSelect={onThemeSelect}
+          themeIndex={themeIndex}
+          themes={themeNames}
+          scrollFormat={scrollFormat}
+          onScrollFormatChange={
+            onScrollFormatChange
+          }
+          onResetExperience={onResetExperience}
           onMemesClick={onMemesClick}
           maxAllowedPage={maxAllowedPage}
         />
@@ -1148,7 +1438,9 @@ export default function ContentPage({
               {page.title
                 .split("\n")
                 .map((line, index) => (
-                  <span key={`${line}-${index}`}>
+                  <span
+                    key={`${line}-${index}`}
+                  >
                     {line}
                     <br />
                   </span>
@@ -1163,15 +1455,28 @@ export default function ContentPage({
                 content={page.content}
                 pageIndex={pageIndex}
                 githubId={githubId}
+                emailId={emailId}
                 teamName={teamName}
-                teamSize={teamSize}
-                teamMemberNumber={teamMemberNumber}
-                onGithubIdChange={onGithubIdChange}
-                onTeamNameChange={onTeamNameChange}
-                onTeamSizeChange={onTeamSizeChange}
+                teamSize={teamSize ?? 1}
+                teamMemberNumber={
+                  teamMemberNumber
+                }
+                onGithubIdChange={
+                  onGithubIdChange
+                }
+                onEmailIdChange={
+                  onEmailIdChange
+                }
+                onTeamNameChange={
+                  onTeamNameChange
+                }
+                onTeamSizeChange={
+                  onTeamSizeChange
+                }
                 onTeamMemberChange={
                   onTeamMemberChange
                 }
+                scrollFormat={scrollFormat}
               />
             </motion.div>
           </motion.div>
